@@ -1,3 +1,4 @@
 /.conda
 /creds.json
-/requirements.txt
+/.ipynb_checkpoints
+*.json
