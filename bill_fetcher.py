@@ -125,7 +125,6 @@ def get_amendment_text(amend_info_list:List[dict],  api_key:str) -> List[dict]:
                 if format['type'] == 'HTML':
                     amendment_text_url = format['url']
             amendment_text_response = requests.get(amendment_text_url)
-            print('amend text', amendment_text_response.text)
             amend_results = amend_info.copy()
             amend_results['amend_text'] = amendment_text_response.text
             results.append(amend_results)
