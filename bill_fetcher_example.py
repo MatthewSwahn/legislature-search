@@ -1,4 +1,4 @@
-from bill_fetcher import get_bill_info, get_bill_text, get_amendment_info, get_amendment_text
+from bill_fetcher import get_bill_info, get_amendment_info
 import json
 import requests
 import os
@@ -18,12 +18,10 @@ def main():
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
 
+    # bill info
     bill_info = get_bill_info(congress_num=congress_num,
                               bill_type=bill_type,
                               bill_number=bill_number,
-                              api_key=api_key)
-    
-    bill_info = get_bill_text(bill_info=bill_info,
                               api_key=api_key)
     
     # amendment info
@@ -31,9 +29,6 @@ def main():
                               bill_type=bill_type,
                               bill_number=bill_number,
                               api_key=api_key)
-    
-    amendment_info = get_amendment_text(amend_info_list=amendment_info,
-                                        api_key=api_key)
     
     
     # write bills and amendment data to directory
