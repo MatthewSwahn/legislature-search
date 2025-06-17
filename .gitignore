@@ -1,7 +1,7 @@
-/.conda
-/creds.json
-/.ipynb_checkpoints
+.conda
+creds.json
+.ipynb_checkpoints
 *.json
-/__pycache__
+__pycache__
 /data
 *.pdf
