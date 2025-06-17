@@ -5,3 +5,4 @@ creds.json
 __pycache__
 /data
 *.pdf
+*.png
