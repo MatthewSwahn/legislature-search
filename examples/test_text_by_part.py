@@ -1,4 +1,4 @@
-from text_by_part import get_text_from_xml
+from ..text_by_part import get_text_from_xml
 from lxml import etree
 import pandas as pd
 
