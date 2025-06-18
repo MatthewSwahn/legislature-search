@@ -13,7 +13,7 @@ import parser
 # import data
 root = etree.parse('data/congress_119_hr1/BILLS-119hr1eh.xml')
 
-bbb_data = parser.get_xml_text_by_paragraph(root=root)
+bbb_data = parser.group_text_paragraph_level(root=root)
 
 bbb_df = pd.DataFrame(bbb_data)
 
@@ -35,7 +35,7 @@ bbb_df['num_spm_tokens_by_para'] = [
 # how much text goes to the 4096 token limit
 bbb_df['max_token_ind'] = bbb_df['num_spm_tokens_by_para'].apply(lambda x: 1 if x == 4096 else 0)
 
-print('how much text hits 4096 tokens?', bbb_df['max_token_ind'].value_counts()) # 7
+print('how much text hits 4096 tokens?\n', bbb_df['max_token_ind'].value_counts()) # 7
 
 bbb_df.to_csv('EDA/bbb_df_by_para_v1.csv')
 bbb_df[bbb_df['max_token_ind'] == 1].to_csv('EDA/bbb_df_by_para_max_tokens.csv')
