@@ -13,7 +13,7 @@ import parser
 # import data
 root = etree.parse('data/congress_119_hr1/BILLS-119hr1eh.xml')
 
-bbb_data = parser.group_text_paragraph_level(root=root)
+bbb_data = parser.get_text_paragraph_level(root=root)
 
 bbb_df = pd.DataFrame(bbb_data)
 
