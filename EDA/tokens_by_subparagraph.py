@@ -7,13 +7,13 @@ import sys
 import os
 sys.path.append(os.getcwd())
 
-import parser2
+import parser
 
 
 # import data
 root = etree.parse('data/congress_119_hr1/BILLS-119hr1eh.xml')
 
-bbb_data = parser2.group_legal_text_with_subparagraphs(root=root)
+bbb_data = parser.get_text_subparagraph_level(root=root)
 
 bbb_df = pd.DataFrame(bbb_data)
 
