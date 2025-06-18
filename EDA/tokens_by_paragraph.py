@@ -42,5 +42,3 @@ bbb_df[bbb_df['max_token_ind'] == 1].to_csv('EDA/bbb_df_by_para_max_tokens.csv')
 
 sns.histplot(data=bbb_df, x="num_spm_tokens_by_para", kde=True, bins=30)
 plt.savefig('EDA/spm_token_dist_by_para.png', dpi=300)
-
-# current xml parsing gets text on the section level and all hit 4096 tokens
