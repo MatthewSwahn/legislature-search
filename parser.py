@@ -1,14 +1,14 @@
 from lxml import etree
-from typing import Optional
+from typing import Optional, List
 
 
-def get_id(elem) -> Optional[etree.Element]:
+def _get_id(elem) -> Optional[etree.Element]:
     """Return the id attribute if present, else None."""
     if elem is None:
         return None
     return elem.get('id')
 
-def find_parent_with_tag(elem:etree.Element, tagname:str) -> Optional[etree.Element]:
+def _find_parent_with_tag(elem:etree.Element, tagname:str) -> Optional[etree.Element]:
     """Walk up the tree from elem and return first parent with the given tag."""
     parent = elem.getparent()
     while parent is not None:
@@ -18,7 +18,7 @@ def find_parent_with_tag(elem:etree.Element, tagname:str) -> Optional[etree.Elem
     return None
 
 
-def get_text_paragraph_level(root:etree.Element) -> list:
+def get_text_paragraph_level(root:etree.Element) -> List[dict]:
     """
     Groups text at the deepest available level:
     paragraph > subsection > section.
@@ -28,16 +28,16 @@ def get_text_paragraph_level(root:etree.Element) -> list:
     groups = []
     # Group by paragraph
     for paragraph in root.xpath('.//paragraph'):
-        subsection = find_parent_with_tag(paragraph, 'subsection')
-        section = find_parent_with_tag(paragraph, 'section')
+        subsection = _find_parent_with_tag(paragraph, 'subsection')
+        section = _find_parent_with_tag(paragraph, 'section')
         text = ''.join(paragraph.itertext()).strip()
         if text:
             groups.append({
                 'level': 'paragraph',
                 'subparagraph_id': None,  # Not grouping by subparagraphs
-                'paragraph_id': get_id(paragraph),
-                'subsection_id': get_id(subsection),
-                'section_id': get_id(section),
+                'paragraph_id': _get_id(paragraph),
+                'subsection_id': _get_id(subsection),
+                'section_id': _get_id(section),
                 'path': root.getpath(paragraph),
                 'text': text,
             })
@@ -46,15 +46,15 @@ def get_text_paragraph_level(root:etree.Element) -> list:
     for subsection in root.xpath('.//subsection'):
         # Only include subsections without paragraphs
         if not subsection.xpath('./paragraph'):
-            section = find_parent_with_tag(subsection, 'section')
+            section = _find_parent_with_tag(subsection, 'section')
             text = ' '.join(subsection.itertext()).strip()
             if text:
                 groups.append({
                     'level': 'subsection',
                     'subparagraph_id': None,
                     'paragraph_id': None,
-                    'subsection_id': get_id(subsection),
-                    'section_id': get_id(section),
+                    'subsection_id': _get_id(subsection),
+                    'section_id': _get_id(section),
                     'path': root.getpath(subsection),
                     'text': text,
                 })
@@ -70,14 +70,14 @@ def get_text_paragraph_level(root:etree.Element) -> list:
                     'subparagraph_id': None,
                     'paragraph_id': None,
                     'subsection_id': None,
-                    'section_id': get_id(section),
+                    'section_id': _get_id(section),
                     'path': root.getpath(section),
                     'text': text,
                 })
 
     return groups
 
-def get_text_subparagraph_level(root:etree.Element) -> list:
+def get_text_subparagraph_level(root:etree.Element) -> List[dict]:
     """
     Groups text at the deepest available level:
     subparagraph > paragraph > subsection > section.
@@ -88,17 +88,17 @@ def get_text_subparagraph_level(root:etree.Element) -> list:
 
     # Group by subparagraph if present
     for subparagraph in root.xpath('.//subparagraph'):
-        paragraph = find_parent_with_tag(subparagraph, 'paragraph')
-        subsection = find_parent_with_tag(subparagraph, 'subsection')
-        section = find_parent_with_tag(subparagraph, 'section')
+        paragraph = _find_parent_with_tag(subparagraph, 'paragraph')
+        subsection = _find_parent_with_tag(subparagraph, 'subsection')
+        section = _find_parent_with_tag(subparagraph, 'section')
         text = ''.join(subparagraph.itertext()).strip()
         if text:
             groups.append({
                 'level': 'subparagraph',
-                'subparagraph_id': get_id(subparagraph),
-                'paragraph_id': get_id(paragraph),
-                'subsection_id': get_id(subsection),
-                'section_id': get_id(section),
+                'subparagraph_id': _get_id(subparagraph),
+                'paragraph_id': _get_id(paragraph),
+                'subsection_id': _get_id(subsection),
+                'section_id': _get_id(section),
                 'path': root.getpath(subparagraph),
                 'text': text,
             })
@@ -107,16 +107,16 @@ def get_text_subparagraph_level(root:etree.Element) -> list:
     for paragraph in root.xpath('.//paragraph'):
         # Only include paragraphs without subparagraph children
         if not paragraph.xpath('./subparagraph'):
-            subsection = find_parent_with_tag(paragraph, 'subsection')
-            section = find_parent_with_tag(paragraph, 'section')
+            subsection = _find_parent_with_tag(paragraph, 'subsection')
+            section = _find_parent_with_tag(paragraph, 'section')
             text = ''.join(paragraph.itertext()).strip()
             if text:
                 groups.append({
                     'level': 'paragraph',
                     'subparagraph_id': None,
-                    'paragraph_id': get_id(paragraph),
-                    'subsection_id': get_id(subsection),
-                    'section_id': get_id(section),
+                    'paragraph_id': _get_id(paragraph),
+                    'subsection_id': _get_id(subsection),
+                    'section_id': _get_id(section),
                     'path': root.getpath(paragraph),
                     'text': text,
                 })
@@ -125,15 +125,15 @@ def get_text_subparagraph_level(root:etree.Element) -> list:
     for subsection in root.xpath('.//subsection'):
         # Only include subsections without paragraphs
         if not subsection.xpath('./paragraph'):
-            section = find_parent_with_tag(subsection, 'section')
+            section = _find_parent_with_tag(subsection, 'section')
             text = ''.join(subsection.itertext()).strip()
             if text:
                 groups.append({
                     'level': 'subsection',
                     'subparagraph_id': None,
                     'paragraph_id': None,
-                    'subsection_id': get_id(subsection),
-                    'section_id': get_id(section),
+                    'subsection_id': _get_id(subsection),
+                    'section_id': _get_id(section),
                     'path': root.getpath(subsection),
                     'text': text,
                 })
@@ -149,7 +149,7 @@ def get_text_subparagraph_level(root:etree.Element) -> list:
                     'subparagraph_id': None,
                     'paragraph_id': None,
                     'subsection_id': None,
-                    'section_id': get_id(section),
+                    'section_id': _get_id(section),
                     'path': root.getpath(section),
                     'text': text,
                 })
