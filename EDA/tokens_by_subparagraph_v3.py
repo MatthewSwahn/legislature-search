@@ -12,7 +12,7 @@ import parser
 # v2 was on 119hr1eh, v3 is 119hr1enr.html (the final bill) https://www.govinfo.gov/app/details/BILLS-119hr1enr/summary
 
 # import data
-root = etree.parse('data/congress_119_hr1/BILLS-119hr1enr.xml')
+root = etree.parse('data/BILLS-119hr1enr.xml')
 
 bbb_data = parser.parse_xml(root=root)
 
