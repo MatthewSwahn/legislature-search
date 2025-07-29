@@ -3,7 +3,7 @@ creds.json
 .ipynb_checkpoints
 *.json
 __pycache__
-/data
+/data/*
 *.pdf
 *.png
 *.csv
