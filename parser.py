@@ -1,157 +1,61 @@
 from lxml import etree
-from typing import Optional, List
+from typing import Optional, List, Dict
 
+LOWEST_TAGS = {'section', 'subsection', 'paragraph', 'subparagraph'}
 
-def _get_id(elem) -> Optional[etree.Element]:
-    """Return the id attribute if present, else None."""
-    if elem is None:
-        return None
-    return elem.get('id')
+def is_lowest_level(elem):
+    tag = elem.tag.split('}', 1)[-1]
+    return tag in LOWEST_TAGS
 
-def _find_parent_with_tag(elem:etree.Element, tagname:str) -> Optional[etree.Element]:
-    """Walk up the tree from elem and return first parent with the given tag."""
-    parent = elem.getparent()
-    while parent is not None:
-        if parent.tag == tagname:
-            return parent
-        parent = parent.getparent()
-    return None
+def get_xpath(elem):
+    path = []
+    while elem is not None and elem.getparent() is not None:
+        parent = elem.getparent()
+        tag = elem.tag.split('}', 1)[-1]
+        siblings = [sib for sib in parent if sib.tag == elem.tag]
+        if len(siblings) > 1:
+            ix = siblings.index(elem) + 1
+            path.append(f'{tag}[{ix}]')
+        else:
+            path.append(tag)
+        elem = parent
+    path.reverse()
+    return '/' + '/'.join(path)
 
+def get_direct_text(elem):
+    text_chunks = []
+    if elem.text and elem.text.strip():
+        text_chunks.append(elem.text.strip())
+    for child in elem:
+        tag = child.tag.split('}', 1)[-1]
+        if tag not in LOWEST_TAGS:
+            if child.text and child.text.strip():
+                text_chunks.append(child.text.strip())
+            for subchild in child:
+                if subchild.text and subchild.text.strip():
+                    text_chunks.append(subchild.text.strip())
+    return ' '.join(text_chunks)
 
-def get_text_paragraph_level(root:etree.Element) -> List[dict]:
-    """
-    Groups text at the deepest available level:
-    paragraph > subsection > section.
-    Ignores subparagraphs as grouping levels.
-    Each result includes paragraph_id, subsection_id, section_id, XPath, and text.
-    """
-    groups = []
-    # Group by paragraph
-    for paragraph in root.xpath('.//paragraph'):
-        subsection = _find_parent_with_tag(paragraph, 'subsection')
-        section = _find_parent_with_tag(paragraph, 'section')
-        text = ''.join(paragraph.itertext()).strip()
-        if text:
-            groups.append({
-                'level': 'paragraph',
-                'subparagraph_id': None,  # Not grouping by subparagraphs
-                'paragraph_id': _get_id(paragraph),
-                'subsection_id': _get_id(subsection),
-                'section_id': _get_id(section),
-                'path': root.getpath(paragraph),
-                'text': text,
-            })
+def should_include(xpath):
+    # Exclude unwanted paths
+    return not (
+        xpath.startswith('/bill/metadata/') or
+        xpath.startswith('/bill/form/') or
+        '/toc/' in xpath
+    )
 
-    # Group by subsection if no paragraphs
-    for subsection in root.xpath('.//subsection'):
-        # Only include subsections without paragraphs
-        if not subsection.xpath('./paragraph'):
-            section = _find_parent_with_tag(subsection, 'section')
-            text = ' '.join(subsection.itertext()).strip()
-            if text:
-                groups.append({
-                    'level': 'subsection',
-                    'subparagraph_id': None,
-                    'paragraph_id': None,
-                    'subsection_id': _get_id(subsection),
-                    'section_id': _get_id(section),
-                    'path': root.getpath(subsection),
-                    'text': text,
-                })
+def parse_xml(root: etree.Element) -> List[Dict]:
+    rows = []
 
-    # Group by section if no subsections or paragraphs
-    for section in root.xpath('.//section'):
-        # Only include sections without subsections or paragraphs
-        if not section.xpath('./subsection') and not section.xpath('./paragraph'):
-            text = ' '.join(section.itertext()).strip()
-            if text:
-                groups.append({
-                    'level': 'section',
-                    'subparagraph_id': None,
-                    'paragraph_id': None,
-                    'subsection_id': None,
-                    'section_id': _get_id(section),
-                    'path': root.getpath(section),
-                    'text': text,
-                })
+    for elem in root.iter():
+        if is_lowest_level(elem):
+            xpath = get_xpath(elem)
+            if should_include(xpath):
+                row = {
+                    'xpath': xpath,
+                    'tag': elem.tag.split('}', 1)[-1],
+                    'text': get_direct_text(elem),
+                }
+                rows.append(row)
 
-    return groups
-
-def get_text_subparagraph_level(root:etree.Element) -> List[dict]:
-    """
-    Groups text at the deepest available level:
-    subparagraph > paragraph > subsection > section.
-    Each result includes subparagraph_id, paragraph_id, subsection_id, section_id, XPath, and text.
-    """
-    
-    groups = []
-
-    # Group by subparagraph if present
-    for subparagraph in root.xpath('.//subparagraph'):
-        paragraph = _find_parent_with_tag(subparagraph, 'paragraph')
-        subsection = _find_parent_with_tag(subparagraph, 'subsection')
-        section = _find_parent_with_tag(subparagraph, 'section')
-        text = ''.join(subparagraph.itertext()).strip()
-        if text:
-            groups.append({
-                'level': 'subparagraph',
-                'subparagraph_id': _get_id(subparagraph),
-                'paragraph_id': _get_id(paragraph),
-                'subsection_id': _get_id(subsection),
-                'section_id': _get_id(section),
-                'path': root.getpath(subparagraph),
-                'text': text,
-            })
-
-    # Group by paragraph if no subparagraphs
-    for paragraph in root.xpath('.//paragraph'):
-        # Only include paragraphs without subparagraph children
-        if not paragraph.xpath('./subparagraph'):
-            subsection = _find_parent_with_tag(paragraph, 'subsection')
-            section = _find_parent_with_tag(paragraph, 'section')
-            text = ''.join(paragraph.itertext()).strip()
-            if text:
-                groups.append({
-                    'level': 'paragraph',
-                    'subparagraph_id': None,
-                    'paragraph_id': _get_id(paragraph),
-                    'subsection_id': _get_id(subsection),
-                    'section_id': _get_id(section),
-                    'path': root.getpath(paragraph),
-                    'text': text,
-                })
-
-    # Group by subsection if no paragraphs or subparagraphs
-    for subsection in root.xpath('.//subsection'):
-        # Only include subsections without paragraphs
-        if not subsection.xpath('./paragraph'):
-            section = _find_parent_with_tag(subsection, 'section')
-            text = ''.join(subsection.itertext()).strip()
-            if text:
-                groups.append({
-                    'level': 'subsection',
-                    'subparagraph_id': None,
-                    'paragraph_id': None,
-                    'subsection_id': _get_id(subsection),
-                    'section_id': _get_id(section),
-                    'path': root.getpath(subsection),
-                    'text': text,
-                })
-
-    # Group by section if no subsections, paragraphs, or subparagraphs
-    for section in root.xpath('.//section'):
-        # Only include sections without subsections or paragraphs
-        if not section.xpath('./subsection') and not section.xpath('./paragraph'):
-            text = ''.join(section.itertext()).strip()
-            if text:
-                groups.append({
-                    'level': 'section',
-                    'subparagraph_id': None,
-                    'paragraph_id': None,
-                    'subsection_id': None,
-                    'section_id': _get_id(section),
-                    'path': root.getpath(section),
-                    'text': text,
-                })
-
-    return groups
+    return rows

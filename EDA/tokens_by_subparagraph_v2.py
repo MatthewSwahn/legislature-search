@@ -13,10 +13,12 @@ import parser
 # import data
 root = etree.parse('data/congress_119_hr1/BILLS-119hr1eh.xml')
 
-bbb_data = parser.get_text_subparagraph_level(root=root)
+bbb_data = parser.parse_xml(root=root)
 
 bbb_df = pd.DataFrame(bbb_data)
 
+print(bbb_df.info())
+print(bbb_df.head())
 
 # instantiate tokenizer. Leaning bigbird as the number of tokens is large
 tokenizer = BigBirdTokenizer.from_pretrained('google/bigbird-roberta-large')
@@ -38,8 +40,16 @@ bbb_df['max_token_ind'] = bbb_df['num_spm_tokens_by_subpara'].apply(lambda x: 1 
 
 print('how much text hits 4096 tokens?', bbb_df['max_token_ind'].value_counts()) # 7
 
-bbb_df.to_csv('EDA/bbb_df_by_subpara_v1.csv')
-bbb_df[bbb_df['max_token_ind'] == 1].to_csv('EDA/bbb_df_by_subpara_max_tokens.csv')
 
-sns.histplot(data=bbb_df, x="num_spm_tokens_by_subpara", kde=True, bins=30)
-plt.savefig('EDA/spm_token_dist_by_subpara_v1.png', dpi=300)
+# how much text has less than 30 tokens?
+bbb_df['lt_30_token_ind'] = bbb_df['num_spm_tokens_by_subpara'].apply(lambda x: 1 if x < 30 else 0)
+
+# save interesting data to csv
+bbb_df[bbb_df['lt_30_token_ind'] == 1].to_csv('EDA/bbb_df_by_subpara_few_tokens_v2.csv')
+bbb_df[bbb_df['max_token_ind'] == 1].to_csv('EDA/bbb_df_by_subpara_max_tokens_v2.csv')
+
+#save whole data as json
+bbb_df.to_json('EDA/bbb_df_by_subpara_v2.json')
+
+sns.histplot(data=bbb_df, x="num_spm_tokens_by_subpara", kde=True, bins=100)
+plt.savefig('EDA/spm_token_dist_by_subpara_v2.png', dpi=300)
