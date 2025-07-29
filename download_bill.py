@@ -5,9 +5,6 @@ def download_bill_xml():
     url = "https://www.congress.gov/119/bills/hr1/BILLS-119hr1enr.xml"
     filename = os.path.join("data", "BILLS-119hr1enr.xml")
     
-    # Create data directory if it doesn't exist
-    os.makedirs("data", exist_ok=True)
-    
     try:
         response = requests.get(url)
         response.raise_for_status()
