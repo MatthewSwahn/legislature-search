@@ -11,5 +11,6 @@ dependencies:
   - pip
   - pytorch
   - sentencepiece 
+  - ipykernel
   - pip:
       - transformers
