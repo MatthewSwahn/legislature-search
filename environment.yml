@@ -12,5 +12,7 @@ dependencies:
   - pytorch
   - sentencepiece 
   - ipykernel
+  - scikit-learn
   - pip:
       - transformers
+      - sentence-transformers
