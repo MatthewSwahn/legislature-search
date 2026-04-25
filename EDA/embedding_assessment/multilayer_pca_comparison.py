@@ -101,7 +101,7 @@ def compare_embedding_strategies():
     plt.tight_layout()
     
     # Save the comparison plot
-    output_path = "EDA/multilayer_pca_comparison.png"
+    output_path = "EDA/embedding_assessment/multilayer_pca_comparison.png"
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     print(f"Comparison plot saved to: {output_path}")
     
