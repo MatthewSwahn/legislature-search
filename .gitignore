@@ -1,3 +1,4 @@
+.env
 .conda
 creds.json
 .ipynb_checkpoints
