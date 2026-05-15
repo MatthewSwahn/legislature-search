@@ -5,14 +5,17 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import sys
 import os
+from dotenv import load_dotenv
 sys.path.append(os.getcwd())
+
+load_dotenv()
 
 import parser
 
 # v4 uses RoBERTa tokenizer instead of BigBird
 
 # import data
-root = etree.parse('data/BILLS-119hr1enr.xml')
+root = etree.parse(os.getenv('bills-119hr1enr'))
 
 bbb_data = parser.parse_xml(root=root)
 

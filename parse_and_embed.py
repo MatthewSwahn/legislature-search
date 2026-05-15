@@ -5,7 +5,10 @@ from sentence_transformers import SentenceTransformer
 import sys
 import os
 from datetime import datetime
+from dotenv import load_dotenv
 sys.path.append(os.getcwd())
+
+load_dotenv()
 
 import parser
 
@@ -33,7 +36,7 @@ def main():
     model = SentenceTransformer('sentence-transformers/all-roberta-large-v1')
     
     # Parse XML data
-    root = etree.parse('data/BILLS-119hr1enr.xml')
+    root = etree.parse(os.getenv('bills-119hr1enr'))
     parsed_data = parser.parse_xml(root=root)
     
     df = pd.DataFrame(parsed_data)

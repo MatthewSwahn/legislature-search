@@ -5,14 +5,17 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import sys
 import os
+from dotenv import load_dotenv
 sys.path.append(os.getcwd())
+
+load_dotenv()
 
 import parser
 
 # v2 was on 119hr1eh, v3 is 119hr1enr.html (the final bill) https://www.govinfo.gov/app/details/BILLS-119hr1enr/summary
 
 # import data
-root = etree.parse('data/BILLS-119hr1enr.xml')
+root = etree.parse(os.getenv('bills-119hr1enr'))
 
 bbb_data = parser.parse_xml(root=root)
 

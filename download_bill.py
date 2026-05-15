@@ -1,10 +1,13 @@
 import requests
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def download_bill_xml():
     '''downloads the XML used for this repo'''
     url = "https://www.congress.gov/119/bills/hr1/BILLS-119hr1enr.xml"
-    filename = os.path.join("data", "BILLS-119hr1enr.xml")
+    filename = os.getenv('bills-119hr1enr')
     
     try:
         response = requests.get(url)

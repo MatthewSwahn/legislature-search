@@ -16,3 +16,4 @@ dependencies:
   - pip:
       - transformers
       - sentence-transformers
+      - python-dotenv
